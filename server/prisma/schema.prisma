@@ -1,0 +1,196 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+enum TransportStrategy {
+  WEIGHT
+  DISTANCE
+  RIDE
+}
+
+
+
+enum ProductType {
+  FRAGILE
+  DANGEROUS
+  NORMAL
+}
+enum LoadType {
+  FIFO
+  LIFO
+  MIXED
+}
+
+model Shipper {
+  shipper_id   Int      @id @default(autoincrement())
+  company_name String
+  phone        String
+  
+  products Product[]
+  requests Request[]
+  shipperOffers Subscription[]
+}
+
+model Transporter {
+  transporter_id Int      @id @default(autoincrement())
+  full_name     String
+  phone         String
+  strategy       TransportStrategy
+  unit_price     Float
+  available    Boolean @default(true)
+  trucks Truck[]
+  drivers Driver[]
+  contracts Contract[]
+}
+model Driver {
+  driver_id Int      @id @default(autoincrement())
+  transporter_id Int
+  full_name String
+  phone     String  
+  truck_id  Int     @unique  // Nullable to avoid cycle issues
+  truck     Truck   @relation(fields: [truck_id], references: [truck_id], onDelete: Cascade)
+  transporter Transporter @relation(fields: [transporter_id], references: [transporter_id])
+  trips Trip[]
+}
+
+model Truck {
+  truck_id      Int      @id @default(autoincrement())
+  model         String
+  plate         String
+  height        Float
+  width         Float
+  length        Float
+  max_weight    Float
+  transporter_id Int
+  driver Driver? @relation
+  productLoadPlans ProductLoadPlan[]
+  route_plans RoutePlan[]
+  transporter   Transporter @relation(fields: [transporter_id], references: [transporter_id])
+}
+
+model Contract {
+  contract_id    Int  @id @default(autoincrement())
+  shipper_id     Int
+  transporter_id Int
+
+  date           DateTime
+  transporter    Transporter @relation(fields: [transporter_id], references: [transporter_id])
+  
+  trips Trip[]
+}
+
+
+model Product {
+  product_id    Int      @id @default(autoincrement())
+  shipper_id    Int
+  name          String
+  weight        Float
+  height        Float
+  width         Float
+  length        Float
+  type          ProductType
+  shipper       Shipper @relation(fields: [shipper_id], references: [shipper_id])
+  requestProducts RequestProduct[]
+  productLoadPlans ProductLoadPlan[]
+}
+
+model RequestProduct {
+  request_id    Int
+  product_id    Int
+  location_id   Int
+  quantity      Int
+  date          DateTime @default(now())
+  product       Product @relation(fields: [product_id], references: [product_id])
+  request       Request @relation(fields: [request_id], references: [request_id])
+  location      Location @relation(fields: [location_id], references: [location_id])
+
+  @@id([request_id, product_id, location_id, date])
+}
+
+model Request {
+  request_id    Int      @id @default(autoincrement())
+  shipper_id    Int
+  shipper       Shipper @relation(fields: [shipper_id], references: [shipper_id])
+  requestProducts RequestProduct[]
+}
+
+model Trip {
+  trip_id       Int      @id @default(autoincrement())
+  driver_id     Int
+  contract_id   Int
+  predefined_start_date    DateTime?
+  predefined_end_date      DateTime?
+  actual_start_date        DateTime?
+  productLoadPlans ProductLoadPlan[]
+  route_plans RoutePlan[]
+  contract      Contract @relation(fields: [contract_id], references: [contract_id])
+  driver        Driver @relation(fields: [driver_id], references: [driver_id])
+}
+
+model Offer {
+  offer_id      Int      @id @default(autoincrement())
+  title         String
+  description   String
+  price         Float
+  duration      Int
+  shipperOffers Subscription[]
+}
+
+model Subscription {
+  shipper_id    Int
+  offer_id      Int
+  start_date    DateTime
+  shipper       Shipper @relation(fields: [shipper_id], references: [shipper_id])
+  offer         Offer @relation(fields: [offer_id], references: [offer_id])
+
+  @@id([shipper_id, offer_id])
+}
+
+
+model RoutePlan {
+  route_plan_id Int      @id @default(autoincrement())
+  date          DateTime @default(now())
+  loadType      LoadType  @default(MIXED)
+  optimized     Boolean @default(false)
+  duration      Float @default(0)
+  trip_id       Int
+  truck_id      Int
+  locations     Location[]
+  trip          Trip @relation(fields: [trip_id], references: [trip_id])
+  truck         Truck @relation(fields: [truck_id], references: [truck_id])
+  
+}
+
+model Location {
+  location_id   Int      @id @default(autoincrement())
+  route_plan_id Int
+  unloadingTime Int
+  name          String
+  longitude     Float
+  latitude      Float
+  order         Int @default(0)
+  route_plan    RoutePlan @relation(fields: [route_plan_id], references: [route_plan_id])
+  requestProducts RequestProduct[]
+
+}
+
+model ProductLoadPlan {
+  trip_id       Int
+  truck_id      Int
+  product_id    Int
+  x             Float
+  y             Float
+  z             Float
+
+  trip          Trip @relation(fields: [trip_id], references: [trip_id])
+  truck         Truck @relation(fields: [truck_id], references: [truck_id])
+  product       Product @relation(fields: [product_id], references: [product_id])
+
+  @@id([trip_id,truck_id, product_id])
+}
