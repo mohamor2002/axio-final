@@ -4,6 +4,13 @@ import { ExtendedError } from "../types/errors";
 import {optimizeTransport} from "../lib/planning"
 import axios from "axios";
 
+
+
+const colors = ["red", "green", "blue", "yellow", "purple", "orange", "pink", "brown", "black", "white",
+    "gray", "cyan", "magenta", "lime", "olive", "maroon", "navy", "teal", "silver", "gold", "indigo", "violet",
+    "fuchsia", "khaki", "azure", "beige", "coral", "crimson", "cyan", "darkblue", "darkcyan", "darkgray", "darkgreen",
+    "darkkhaki", "darkmagenta", "darkolivegreen", "darkorange", "darkorchid", "darkred", "darksalmon", "darkviolet",]
+
 export default class RequestRepository {
     static async listRequests(shipper_id:number): Promise<RepositoryResponse> {
         const requests = await prisma.request.findMany({
@@ -275,19 +282,19 @@ export default class RequestRepository {
             Array.from({ length: rp.quantity }, (_, i) => ({
                 partno: `box ${i}${rp.product.product_id}`,
                 name: `${rp.product.name} ${i}`,
-                typeof: "box",
+                typeof: "cube",
                 weight: rp.product.weight,
                 level: 1,
                 loadbear: 100,
                 updown: true,
-                color: "red",
-                WHD: [rp.product.width, rp.product.height, rp.product.length]
+                color: colors[rp.product.product_id % colors.length],
+                WHD: [rp.product.width, rp.product.length, rp.product.height]
             }))
         );
     
         const bins = contract.transporter.trucks.map(truck => ({
             partno: `truck ${truck.truck_id}`,
-            WHD: [truck.width, truck.height, truck.length],
+            WHD: [truck.width,truck.length, truck.height],
             max_weight: truck.max_weight
         }));
     
@@ -303,9 +310,18 @@ export default class RequestRepository {
             console.error("Error sending request:", error?.response?.data || error);
             throw new ExtendedError(500, "Error loading request");
         }
-    
+        
         return {
-            data: response.data,
+            data: {
+                result: response.data.fitted_result.map((fit: any) => ({
+                    bin_name: fit.bin_name,
+                    pack_count: fit.items.length,
+                    space_usage: fit.space_usage,
+                    residual_volumn: fit.residual_volumn,
+                    gravity_distribution: fit.gravity_distribution,
+                })
+                ),
+            },
             status: 200,
             success: true
         };

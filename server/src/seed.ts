@@ -59,10 +59,10 @@ async function main() {
       data: {
           model: "Volvo FH16",
           plate: "ABC-1234",
-          height: 40,
+          height: 25,
           width: 25,
-          length: 12,
-          max_weight: 40000,
+          length: 60,
+          max_weight: 850,
           transporter_id: transporter.transporter_id,
         },
     });
@@ -71,11 +71,11 @@ async function main() {
       data: {
           model: "HMC 6x4",
           plate: "DEF-5678",
-          height: 40,
-          width: 25,
-          length: 12,
-          max_weight: 40000,
-          transporter_id: transporter2.transporter_id,
+          height: 25,
+          width: 35,
+          length: 55,
+          max_weight: 400,
+          transporter_id: transporter.transporter_id,
         },
     });
 
@@ -83,10 +83,10 @@ async function main() {
       data: {
           model: "HMC 6x4",
           plate: "DEF-5678",
-          height: 40,
+          height: 25,
           width: 25,
-          length: 12,
-          max_weight: 40000,
+          length: 60,
+          max_weight: 450,
           transporter_id: transporter2.transporter_id,
         },
     });
@@ -104,7 +104,7 @@ async function main() {
       data: {
         full_name: "John Doe",
         phone: "5551234567",
-        transporter_id: transporter2.transporter_id,
+        transporter_id: transporter.transporter_id,
         truck_id:truck2.truck_id
       },
     });
@@ -249,7 +249,7 @@ async function main() {
     data: {
       request_id: request.request_id,
       product_id: productList[1].product_id,
-      quantity: 12,
+      quantity: 17,
       location_id: locationList[3].location_id,
     },
   })
@@ -258,7 +258,7 @@ async function main() {
     data: {
       request_id: request.request_id,
       product_id: productList[2].product_id,
-      quantity: 14,
+      quantity: 20,
       location_id: locationList[4].location_id,
     },
   })
@@ -267,7 +267,7 @@ async function main() {
     data: {
       request_id: request.request_id,
       product_id: productList[3].product_id,
-      quantity: 20,
+      quantity: 30,
       location_id: locationList[1].location_id,
     },
   })
