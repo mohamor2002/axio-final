@@ -58,7 +58,8 @@ The `load_model` is a FastAPI server.
 - Ensure all dependencies are installed before running the servers.
 - Check environment variables and `.env` configuration before starting the Express server.
 - The FastAPI server should be accessible on port `8000`.
-- Since the front app was not integrated, the visualizations of the truck loading process are found in ```load_model/outputs```
+- Since the front app was not integrated, the visualizations of the truck(s) loading process are found as ```load_model/outputs/truck(i)```
+- Make sure to take a look at the ```Driver mobile app``` repo, as well as the ```Shipper portail front-end app```, which are held seperately. 
 
 ---
 
